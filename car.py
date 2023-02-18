@@ -6,6 +6,8 @@ STEERING_THRESHOLD = 1e-2
 PERCEPT_R = 50
 CANVAS_W = 700
 CANVAS_H = 700
+STATE_NOISE_STD = 0.01
+CONTORL_NOISE_STD = 0.1
 
 class Car:
   def __init__(self):
@@ -42,6 +44,7 @@ class Car:
 
   def prop_dynamics(self, control, dt):
     steer, vel = control
+    steer += np.random.normal(0, CONTORL_NOISE_STD)
     if np.abs(steer) < STEERING_THRESHOLD:
       self.x += vel * np.cos(self.theta) * dt
       self.y += vel * np.sin(self.theta) * dt
@@ -51,3 +54,6 @@ class Car:
       self.x += self.l / tan * (np.sin(new_theta) - np.sin(self.theta))
       self.y += self.l / tan * (np.cos(self.theta) - np.cos(new_theta))
       self.theta = new_theta
+    self.x += np.random.normal(0, STATE_NOISE_STD)
+    self.y += np.random.normal(0, STATE_NOISE_STD)
+    self.theta += np.random.normal(0, STATE_NOISE_STD)
