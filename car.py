@@ -4,6 +4,8 @@ from ai import AI
 
 STEERING_THRESHOLD = 1e-2
 PERCEPT_R = 50
+CANVAS_W = 700
+CANVAS_H = 700
 
 class Car:
   def __init__(self):
@@ -27,11 +29,15 @@ class Car:
     left_cones = []
     right_cones = []
     for x, y in blue_cones:
+      x *= 0.01 * CANVAS_W
+      y *= 0.01 * CANVAS_H
       if (x - self.x) * (x - self.x) + (y - self.y) * (y - self.y) < PERCEPT_R * PERCEPT_R:
-        left_cones.append((x, y))
+        left_cones.append(np.array([x, y]))
     for x, y in yellow_cones:
+      x *= 0.01 * CANVAS_W
+      y *= 0.01 * CANVAS_H
       if (x - self.x) * (x - self.x) + (y - self.y) * (y - self.y) < PERCEPT_R * PERCEPT_R:
-        right_cones.append((x, y))
+        right_cones.append(np.array([x, y]))
     return left_cones, right_cones
 
   def prop_dynamics(self, control, dt):
