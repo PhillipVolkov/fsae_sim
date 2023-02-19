@@ -1,11 +1,13 @@
 import numpy as np
+
 from cones import yellow_cones, blue_cones
 from ai import AI
 
-CANVAS_W = 700
-CANVAS_H = 700
+CANVAS_WIDTH = 700
+CANVAS_HEIGHT = 700
+
 STEERING_THRESHOLD = 1e-4
-PERCEPT_R = 50
+PERCEPT_RADIUS = 50
 NOISE_STD = 0.01
 
 class Car:
@@ -35,14 +37,14 @@ class Car:
     left_cones = []
     right_cones = []
     for x, y in blue_cones:
-      x *= 0.01 * CANVAS_W
-      y *= 0.01 * CANVAS_H
-      if (x - self.x) * (x - self.x) + (y - self.y) * (y - self.y) < PERCEPT_R * PERCEPT_R:
+      x *= 0.01 * CANVAS_WIDTH
+      y *= 0.01 * CANVAS_HEIGHT
+      if (x - self.x) * (x - self.x) + (y - self.y) * (y - self.y) < PERCEPT_RADIUS * PERCEPT_RADIUS:
         left_cones.append(np.array([x, y]))
     for x, y in yellow_cones:
-      x *= 0.01 * CANVAS_W
-      y *= 0.01 * CANVAS_H
-      if (x - self.x) * (x - self.x) + (y - self.y) * (y - self.y) < PERCEPT_R * PERCEPT_R:
+      x *= 0.01 * CANVAS_WIDTH
+      y *= 0.01 * CANVAS_HEIGHT
+      if (x - self.x) * (x - self.x) + (y - self.y) * (y - self.y) < PERCEPT_RADIUS * PERCEPT_RADIUS:
         right_cones.append(np.array([x, y]))
     return left_cones, right_cones
 

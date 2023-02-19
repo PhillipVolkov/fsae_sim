@@ -1,11 +1,13 @@
-from cones import yellow_cones, blue_cones
 import os
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = 'hide'
 import pygame
 from pygame import gfxdraw
+
 import numpy as np
 from time import perf_counter
-from car import Car, PERCEPT_R
+
+from cones import yellow_cones, blue_cones
+from car import Car, PERCEPT_RADIUS
 
 GREY = (200, 200, 200)
 RED = (255, 0, 0)
@@ -14,14 +16,15 @@ YELLOW = (255, 235, 0)
 GREEN = (0, 160, 0)
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
-CANVAS_W = 700
-CANVAS_H = 700
+
+CANVAS_WIDTH = 700
+CANVAS_HEIGHT = 700
 
 class Sim:
   def __init__(self):
     pygame.init()
     pygame.display.set_caption('FSAE Simulation')
-    self.canvas = pygame.display.set_mode((CANVAS_W, CANVAS_H))
+    self.canvas = pygame.display.set_mode((CANVAS_WIDTH, CANVAS_HEIGHT))
     self.running = True
     self.prev_time = perf_counter()
     self.events = {'quit': False, 'r': False, 'q': False}
@@ -61,15 +64,15 @@ class Sim:
   
   def canvas_coords(self, points):
     new_points = points.copy()
-    new_points[:, 0] = CANVAS_W / 2 + points[:, 0]
-    new_points[:, 1] = CANVAS_H / 2 - points[:, 1]
+    new_points[:, 0] = CANVAS_WIDTH / 2 + points[:, 0]
+    new_points[:, 1] = CANVAS_HEIGHT / 2 - points[:, 1]
     return new_points
   
   def render_cones(self, cones, color):
     for x, y in cones:
-      x *= 0.01 * CANVAS_W
-      y *= 0.01 * CANVAS_H
-      if self.debug and (x - self.car.x) * (x - self.car.x) + (y - self.car.y) * (y - self.car.y) < PERCEPT_R * PERCEPT_R:
+      x *= 0.01 * CANVAS_WIDTH
+      y *= 0.01 * CANVAS_HEIGHT
+      if self.debug and (x - self.car.x) * (x - self.car.x) + (y - self.car.y) * (y - self.car.y) < PERCEPT_RADIUS * PERCEPT_RADIUS:
         c = WHITE
       else:
         c = color

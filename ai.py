@@ -1,6 +1,6 @@
 import numpy as np
 
-CAR_L = 15
+CAR_LENGTH = 15
 
 class AI:
   def compute(self, perception, state):
@@ -20,7 +20,7 @@ class AI:
 
     ref_x, ref_y = self.transform(state, ref_pt)
     turn_radius = (ref_x * ref_x + ref_y * ref_y) / (2 * ref_y)
-    steer = np.arctan(CAR_L / turn_radius)
+    steer = np.arctan(CAR_LENGTH / turn_radius)
 
     # can be whateva lol
     vel = 160
