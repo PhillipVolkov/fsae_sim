@@ -1,8 +1,8 @@
 import numpy as np
 
+CAR_L = 10
 MAX_VEL = 250
 MAX_STEER = 45
-CAR_L = 10
 
 class AI:
   def compute(self, perception, state):
