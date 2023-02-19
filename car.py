@@ -7,7 +7,7 @@ PERCEPT_R = 50
 CANVAS_W = 700
 CANVAS_H = 700
 STATE_NOISE_STD = 0.01
-CONTORL_NOISE_STD = 0.1
+CONTORL_NOISE_STD = 0.05
 
 class Car:
   def __init__(self):
