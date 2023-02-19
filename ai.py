@@ -1,65 +1,55 @@
 import numpy as np
 
-CAR_L = 10
-MAX_VEL = 250
-MAX_STEER = 45
+CAR_L = 15
 
 class AI:
   def compute(self, perception, state):
     left_cones, right_cones = perception
+
+    target_left = self.get_target(state, left_cones)
+    target_right = self.get_target(state, right_cones)
+
+    min_left_pairwise_dist = self.min_pairwise_dist(left_cones)
+    min_right_pairwise_dist = self.min_pairwise_dist(right_cones)
+
+    if min_left_pairwise_dist < min_right_pairwise_dist:
+      p = 1 - 0.5 * min_left_pairwise_dist / min_right_pairwise_dist
+    else:
+      p = 0.5 * min_right_pairwise_dist / min_left_pairwise_dist
+    ref_pt = p * target_left + (1 - p) * target_right
+
+    ref_x, ref_y = self.transform(state, ref_pt)
+    turn_radius = (ref_x * ref_x + ref_y * ref_y) / (2 * ref_y)
+    steer = np.arctan(CAR_L / turn_radius)
+
+    # can be whateva lol
+    vel = 160
+
+    return steer, vel, ref_pt
+  
+  def min_pairwise_dist(self, cones):
+    min_dist = np.inf
+    for i in range(0, len(cones) - 1):
+      dist = np.linalg.norm(cones[i] - cones[i + 1])
+      if dist < min_dist:
+        min_dist = dist
+    return min_dist
+  
+  def get_target(self, state, cones):
     car_x, car_y, car_theta = state
+    car_pos = np.array((car_x, car_y))
+    target_cone = car_pos.copy()
+    for cone in cones:
+      if self.transform(state, cone)[0] > 0 and np.linalg.norm(cone - car_pos) > np.linalg.norm(target_cone - car_pos):
+        target_cone = cone
+    return target_cone
 
-    target_left_x = car_x
-    target_left_y = car_y
-    for x, y in left_cones:
-      if self.transform((x, y), state)[0] > 0 and (x - car_x) * (x - car_x) + (y - car_y) * (y - car_y) > (target_left_x - car_x) * (target_left_x - car_x) + (target_left_y - car_y) * (target_left_y - car_y):
-        target_left_x = x
-        target_left_y = y
-
-    target_right_x = car_x
-    target_right_y = car_y
-    for x, y in right_cones:
-      if self.transform((x, y), state)[0] > 0 and (x - car_x) * (x - car_x) + (y - car_y) * (y - car_y) > (target_right_x - car_x) * (target_right_x - car_x) + (target_right_y - car_y) * (target_right_y - car_y):
-        target_right_x = x
-        target_right_y = y
-
-    target_left = np.array([target_left_x, target_left_y])
-    target_right = np.array([target_right_x, target_right_y])
-
-    min_left_dist = np.inf
-    for i in range(0, len(left_cones) - 1):
-      cone1 = left_cones[i]
-      cone2 = left_cones[i + 1]
-      dist = np.linalg.norm(cone1 - cone2)
-      if dist < min_left_dist:
-        min_left_dist = dist
-    
-    min_right_dist = np.inf
-    for i in range(0, len(right_cones) - 1):
-      cone1 = right_cones[i]
-      cone2 = right_cones[i + 1]
-      dist = np.linalg.norm(cone1 - cone2)
-      if dist < min_right_dist:
-        min_right_dist = dist
-
-      if min_left_dist < min_right_dist:
-        p = 1 - min_left_dist / min_right_dist / 2
-      else:
-        p = min_right_dist / min_left_dist / 2
-      reference_pt = p * target_left + (1 - p) * target_right
-
-      ref_x, ref_y = self.transform(reference_pt, state)
-      turn_radius = (ref_x * ref_x + ref_y * ref_y) / (2 * ref_y)
-      steer = np.arctan(CAR_L / turn_radius)
-
-    return steer, MAX_VEL
-
-  def transform(self, reference_pt, state):
-    ref_x, ref_y = reference_pt
-    x, y, theta = state
-    cos = np.cos(theta)
-    sin = np.sin(theta)
+  def transform(self, state, ref_pt):
+    car_x, car_y, car_theta = state
+    ref_x, ref_y = ref_pt
+    cos = np.cos(car_theta)
+    sin = np.sin(car_theta)
     R = np.array([[cos, sin], [-sin, cos]])
-    dx = ref_x - x
-    dy = ref_y - y
+    dx = ref_x - car_x
+    dy = ref_y - car_y
     return R @ np.array([dx, dy])
