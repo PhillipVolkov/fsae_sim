@@ -27,12 +27,13 @@ class Sim:
     self.canvas = pygame.display.set_mode((CANVAS_WIDTH, CANVAS_HEIGHT))
     self.running = True
     self.prev_time = perf_counter()
-    self.events = {'quit': False, 'r': False, 'q': False}
+    self.events = {'quit': False, 'r': False, 'q': False, 'h': False}
     self.car = Car()
     self.debug = False
+    self.hide_cones = False
 
   def get_events(self):
-    events = {'space': False, 'quit': False, 'r': False, 'q': False}
+    events = {'space': False, 'quit': False, 'r': False, 'q': False, 'h': False}
     for event in pygame.event.get():
       events['quit'] = event.type == pygame.QUIT
       if event.type == pygame.KEYDOWN:
@@ -42,6 +43,8 @@ class Sim:
           events['r'] = True
         if event.key == pygame.K_q:
           events['q'] = True
+        if event.key == pygame.K_h:
+          events['h'] = True
     return events
 
   def update(self):
@@ -56,6 +59,8 @@ class Sim:
       self.car.reset()
     if events['quit'] or events['q']:
       self.running = False
+    if events['h']:
+      self.hide_cones = not self.hide_cones
 
   def rot_mat(self, theta):
     cos = np.cos(theta)
@@ -72,13 +77,16 @@ class Sim:
     for x, y in cones:
       x *= 0.01 * CANVAS_WIDTH
       y *= 0.01 * CANVAS_HEIGHT
-      if self.debug and (x - self.car.x) * (x - self.car.x) + (y - self.car.y) * (y - self.car.y) < PERCEPT_RADIUS * PERCEPT_RADIUS:
+      if self.hide_cones and not (x - self.car.x) * (x - self.car.x) + (y - self.car.y) * (y - self.car.y) < PERCEPT_RADIUS * PERCEPT_RADIUS:
         c = WHITE
       else:
-        c = color
-      x, y = self.canvas_coords(np.array([[x, y]]))[0]
-      gfxdraw.aacircle(self.canvas, int(x), int(y), 2, c)
-      gfxdraw.filled_circle(self.canvas, int(x), int(y), 2, c)
+        if self.debug and (x - self.car.x) * (x - self.car.x) + (y - self.car.y) * (y - self.car.y) < PERCEPT_RADIUS * PERCEPT_RADIUS:
+          c = WHITE
+        else:
+          c = color
+        x, y = self.canvas_coords(np.array([[x, y]]))[0]
+        gfxdraw.aacircle(self.canvas, int(x), int(y), 2, c)
+        gfxdraw.filled_circle(self.canvas, int(x), int(y), 2, c)
 
   def render_ref(self):
     if self.debug:
