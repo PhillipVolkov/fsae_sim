@@ -88,41 +88,32 @@ class Sim:
 
   def render_car(self):
     wheel_poly = np.array([(2, 1), (-2, 1), (-2, -1), (2, -1)])
-
     # front left wheel
     front_left = wheel_poly.copy() @ self.rot_mat(self.car.steer) + (0.3 * self.car.l, 0.6 * self.car.w)
     front_left = front_left @ self.rot_mat(self.car.theta) + (self.car.x, self.car.y)
     front_left = self.canvas_coords(front_left)
     gfxdraw.aapolygon(self.canvas, front_left, BLACK)
     gfxdraw.filled_polygon(self.canvas, front_left, BLACK)
-
     # front right wheel
     front_right = wheel_poly.copy() @ self.rot_mat(self.car.steer) + (0.3 * self.car.l, -0.6 * self.car.w)
     front_right = front_right @ self.rot_mat(self.car.theta) + (self.car.x, self.car.y)
     front_right = self.canvas_coords(front_right)
     gfxdraw.aapolygon(self.canvas, front_right, BLACK)
     gfxdraw.filled_polygon(self.canvas, front_right, BLACK)
-
     # back left wheel
     back_left =  wheel_poly.copy() + (-0.3 * self.car.l, 0.6 * self.car.w)
     back_left = back_left @ self.rot_mat(self.car.theta) + (self.car.x, self.car.y)
     back_left = self.canvas_coords(back_left)
     gfxdraw.aapolygon(self.canvas, back_left, BLACK)
     gfxdraw.filled_polygon(self.canvas, back_left, BLACK)
-
     # back right wheel
     back_right =  wheel_poly.copy() + (-0.3 * self.car.l, -0.6 * self.car.w)
     back_right = back_right @ self.rot_mat(self.car.theta) + (self.car.x, self.car.y)
     back_right = self.canvas_coords(back_right)
     gfxdraw.aapolygon(self.canvas, back_right, BLACK)
     gfxdraw.filled_polygon(self.canvas, back_right, BLACK)
-
     # car body
-    car_poly = np.array([
-      (0.5 * self.car.l, 0.5 * self.car.w),
-      (-0.5 * self.car.l, 0.5 * self.car.w),
-      (-0.5 * self.car.l, -0.5 * self.car.w),
-      (0.5 * self.car.l, -0.5 * self.car.w)])
+    car_poly = np.array([(0.5 * self.car.l, 0.5 * self.car.w), (-0.5 * self.car.l, 0.5 * self.car.w), (-0.5 * self.car.l, -0.5 * self.car.w), (0.5 * self.car.l, -0.5 * self.car.w)])
     car_points = car_poly @ self.rot_mat(self.car.theta) + (self.car.x, self.car.y)
     car_points = self.canvas_coords(car_points)
     gfxdraw.aapolygon(self.canvas, car_points, RED)
