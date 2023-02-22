@@ -9,6 +9,9 @@ from time import perf_counter
 from cones import yellow_cones, blue_cones
 from car import Car, PERCEPT_RADIUS
 
+CANVAS_WIDTH = 700
+CANVAS_HEIGHT = 700
+
 GREY = (200, 200, 200)
 RED = (255, 0, 0)
 BLUE = (0, 0, 255)
@@ -16,9 +19,6 @@ YELLOW = (255, 235, 0)
 GREEN = (0, 160, 0)
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
-
-CANVAS_WIDTH = 700
-CANVAS_HEIGHT = 700
 
 class Sim:
   def __init__(self):
@@ -88,7 +88,7 @@ class Sim:
         gfxdraw.aacircle(self.canvas, int(x), int(y), 2, c)
         gfxdraw.filled_circle(self.canvas, int(x), int(y), 2, c)
 
-  def render_ref(self):
+  def render_reference(self):
     if self.debug:
       x, y = self.canvas_coords(np.array([self.ref_pt]))[0]
       gfxdraw.aacircle(self.canvas, int(x), int(y), 2, GREEN)
@@ -131,6 +131,6 @@ class Sim:
     self.canvas.fill(GREY)
     self.render_cones(blue_cones, BLUE)
     self.render_cones(yellow_cones, YELLOW)
-    self.render_ref()
+    self.render_reference()
     self.render_car()
     pygame.display.update()

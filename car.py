@@ -1,19 +1,19 @@
 import numpy as np
 
 from cones import yellow_cones, blue_cones
-from ai import AI
+from ai import AI, CAR_LENGTH, CAR_WIDTH
 
 CANVAS_WIDTH = 700
 CANVAS_HEIGHT = 700
 
 STEERING_THRESHOLD = 1e-4
 PERCEPT_RADIUS = 50
-NOISE_STD = 0.01
+NOISE = 0.01
 
 class Car:
   def __init__(self):
-    self.w = 5
-    self.l = 15
+    self.l = CAR_LENGTH
+    self.w = CAR_WIDTH
     self.ai = AI()
     self.reset()
 
@@ -49,8 +49,8 @@ class Car:
     return left_cones, right_cones
 
   def step(self, dt):
-    self.steer += np.random.normal(0, NOISE_STD)
-    self.vel += np.random.normal(0, NOISE_STD)
+    self.steer += np.random.normal(0, NOISE)
+    self.vel += np.random.normal(0, NOISE)
     if np.abs(self.steer) < STEERING_THRESHOLD:
       self.x += self.vel * np.cos(self.theta) * dt
       self.y += self.vel * np.sin(self.theta) * dt
@@ -60,6 +60,6 @@ class Car:
       self.x += self.l / tan * (np.sin(new_theta) - np.sin(self.theta))
       self.y += self.l / tan * (np.cos(self.theta) - np.cos(new_theta))
       self.theta = new_theta
-    self.x += np.random.normal(0, NOISE_STD)
-    self.y += np.random.normal(0, NOISE_STD)
-    self.theta += np.random.normal(0, NOISE_STD)
+    self.x += np.random.normal(0, NOISE)
+    self.y += np.random.normal(0, NOISE)
+    self.theta += np.random.normal(0, NOISE)

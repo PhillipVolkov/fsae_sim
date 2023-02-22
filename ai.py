@@ -1,6 +1,9 @@
 import numpy as np
 
 CAR_LENGTH = 15
+CAR_WIDTH = 5
+
+AGGRESSION = 2.5
 
 class AI:
   def compute(self, perception, state):
@@ -12,12 +15,18 @@ class AI:
     min_left_pairwise_dist = self.min_pairwise_dist(left_cones)
     min_right_pairwise_dist = self.min_pairwise_dist(right_cones)
 
-    if min_left_pairwise_dist < min_right_pairwise_dist:
-      p = 1 - 0.5 * min_left_pairwise_dist / min_right_pairwise_dist
-    else:
-      p = 0.5 * min_right_pairwise_dist / min_left_pairwise_dist
+    target_cross_track_dist = np.linalg.norm(target_left - target_right)
+    adjusted_target_left = target_left + (target_right - target_left) / target_cross_track_dist * CAR_WIDTH
+    adjusted_target_right = target_right + (target_left - target_right) / target_cross_track_dist * CAR_WIDTH
 
-    ref_pt = p * target_left + (1 - p) * target_right
+    if min_left_pairwise_dist < min_right_pairwise_dist:
+      ratio = min_left_pairwise_dist / min_right_pairwise_dist
+      p = 1 / (1 + np.exp(AGGRESSION * (ratio - 1)))
+    else:
+      ratio = min_right_pairwise_dist / min_left_pairwise_dist
+      p = 1 - 1 / (1 + np.exp(AGGRESSION * (ratio - 1)))
+
+    ref_pt = p * adjusted_target_left + (1 - p) * adjusted_target_right
 
     ref_x, ref_y = self.transform(state, ref_pt)
 
