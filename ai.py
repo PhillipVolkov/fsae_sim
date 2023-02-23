@@ -6,6 +6,9 @@ CAR_WIDTH = 5
 AGGRESSION = 2.5
 
 class AI:
+  def __init__(self):
+    self.reference = np.array([0, 0])
+
   def compute(self, perception, state):
     left_cones, right_cones = perception
 
@@ -26,17 +29,16 @@ class AI:
       ratio = min_right_pairwise_dist / min_left_pairwise_dist
       p = 1 - 1 / (1 + np.exp(AGGRESSION * (ratio - 1)))
 
-    ref_pt = p * adjusted_target_left + (1 - p) * adjusted_target_right
+    self.reference = p * adjusted_target_left + (1 - p) * adjusted_target_right
 
-    ref_x, ref_y = self.transform(state, ref_pt)
-
+    ref_x, ref_y = self.transform(state, self.reference)
     turn_radius = (ref_x * ref_x + ref_y * ref_y) / (2 * ref_y)
     steer = np.arctan(CAR_LENGTH / turn_radius)
 
     # can be whateva lol
     vel = 200
 
-    return steer, vel, ref_pt
+    return steer, vel
   
   def min_pairwise_dist(self, cones):
     min_dist = np.inf
@@ -61,15 +63,12 @@ class AI:
 
     return target_cone
 
-  def transform(self, state, ref_pt):
+  def transform(self, state, pt):
     car_x, car_y, car_theta = state
-    ref_x, ref_y = ref_pt
+    x, y = pt
 
     cos = np.cos(car_theta)
     sin = np.sin(car_theta)
     R = np.array([[cos, sin], [-sin, cos]])
 
-    dx = ref_x - car_x
-    dy = ref_y - car_y
-
-    return R @ np.array([dx, dy])
+    return R @ np.array([x - car_x, y - car_y])

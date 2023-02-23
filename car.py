@@ -29,9 +29,8 @@ class Car:
   def update(self, dt):
     perception = self.detect_cones()
     state = (self.x, self.y, self.theta)
-    self.steer, self.vel, ref_pt = self.ai.compute(perception, state)
+    self.steer, self.vel = self.ai.compute(perception, state)
     self.step(dt)
-    return ref_pt
 
   def detect_cones(self):
     left_cones = []

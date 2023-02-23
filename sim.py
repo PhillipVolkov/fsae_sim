@@ -51,7 +51,7 @@ class Sim:
     curr_time = perf_counter()
     dt = curr_time - self.prev_time
     self.prev_time = curr_time
-    self.ref_pt = self.car.update(dt)
+    self.car.update(dt)
     events = self.get_events()
     if events['space']:
       self.debug = not self.debug
@@ -90,7 +90,7 @@ class Sim:
 
   def render_reference(self):
     if self.debug:
-      x, y = self.canvas_coords(np.array([self.ref_pt]))[0]
+      x, y = self.canvas_coords(np.array([self.car.ai.reference]))[0]
       gfxdraw.aacircle(self.canvas, int(x), int(y), 2, GREEN)
       gfxdraw.filled_circle(self.canvas, int(x), int(y), 2, GREEN)
 
