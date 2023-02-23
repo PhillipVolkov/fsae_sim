@@ -34,7 +34,7 @@ class AI:
     steer = np.arctan(CAR_LENGTH / turn_radius)
 
     # can be whateva lol
-    vel = 160
+    vel = 200
 
     return steer, vel, ref_pt
   
