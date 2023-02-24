@@ -6,8 +6,8 @@ CAR_WIDTH = 5
 AGGRESSION = 2.5
 
 class AI:
-  def compute(self, perception, state):
-    left_cones, right_cones = perception
+  def compute(self, percept):
+    left_cones, right_cones = percept
 
     # can be whatever lol
     vel = 200
@@ -16,8 +16,8 @@ class AI:
       return 0, vel
 
     # get target cones on either side
-    target_left = self.get_target(state, left_cones)
-    target_right = self.get_target(state, right_cones)
+    target_left = self.get_target(left_cones)
+    target_right = self.get_target(right_cones)
 
     # add cross-track padding to target cones (of size car width)
     target_cross_track_dist = np.linalg.norm(target_left - target_right)
@@ -40,7 +40,7 @@ class AI:
     self.reference = p * adjusted_target_left + (1 - p) * adjusted_target_right
 
     # compute steering angle corresponding to trajectory that would hit the reference point
-    ref_x, ref_y = self.transform(state, self.reference)
+    ref_x, ref_y = self.reference
     turn_radius = (ref_x * ref_x + ref_y * ref_y) / (2 * ref_y)
     steer = np.arctan(CAR_LENGTH / turn_radius)
 
@@ -57,26 +57,12 @@ class AI:
 
     return min_dist
 
-  def get_target(self, state, cones):
-    car_x, car_y, car_theta = state
-    car_pos = np.array((car_x, car_y))
+  def get_target(self, cones):
+    target_cone = np.array([0, 0])
 
     # find furthest cone in front of the car
-    target_cone = car_pos.copy()
     for cone in cones:
-      if self.transform(state, cone)[0] > 0 and np.linalg.norm(cone - car_pos) > np.linalg.norm(target_cone - car_pos):
+      if cone[0] > 0 and np.linalg.norm(cone) > np.linalg.norm(target_cone):
         target_cone = cone
 
     return target_cone
-
-  def transform(self, state, pt):
-    car_x, car_y, car_theta = state
-    x, y = pt
-
-    # compute inverse rotation matrix
-    cos = np.cos(car_theta)
-    sin = np.sin(car_theta)
-    R = np.array([[cos, sin], [-sin, cos]])
-
-    # transform point to refence frame of state
-    return R @ np.array([x - car_x, y - car_y])

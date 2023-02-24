@@ -62,11 +62,12 @@ class Sim:
     if events['h']:
       self.hide_cones = not self.hide_cones
 
-  def rot_mat(self, theta):
-    cos = np.cos(theta)
-    sin = np.sin(theta)
-    return np.array([(cos, sin), (-sin, cos)])
-  
+  def transform(self, points, dtheta, dx, dy):
+    cos = np.cos(dtheta)
+    sin = np.sin(dtheta)
+    R = np.array([(cos, sin), (-sin, cos)])
+    return points.copy() @ R + np.array([dx, dy])
+
   def canvas_coords(self, points):
     new_points = points.copy()
     new_points[:, 0] = CANVAS_WIDTH / 2 + points[:, 0]
@@ -77,10 +78,10 @@ class Sim:
     for x, y in cones:
       x *= 0.01 * CANVAS_WIDTH
       y *= 0.01 * CANVAS_HEIGHT
-      if self.hide_cones and not (x - self.car.x) * (x - self.car.x) + (y - self.car.y) * (y - self.car.y) < PERCEPT_RADIUS * PERCEPT_RADIUS:
-        c = WHITE
-      else:
-        if self.debug and (x - self.car.x) * (x - self.car.x) + (y - self.car.y) * (y - self.car.y) < PERCEPT_RADIUS * PERCEPT_RADIUS:
+      cone = self.car.relative_pos((x, y))
+      dist = np.linalg.norm(cone)
+      if not self.hide_cones or dist < PERCEPT_RADIUS:
+        if self.debug and dist < PERCEPT_RADIUS:
           c = WHITE
         else:
           c = color
@@ -90,39 +91,45 @@ class Sim:
 
   def render_reference(self):
     if self.debug:
-      x, y = self.canvas_coords(np.array([self.car.ai.reference]))[0]
+      reference = self.transform(self.car.ai.reference, self.car.theta, self.car.x, self.car.y)
+      x, y = self.canvas_coords(np.array([reference]))[0]
       gfxdraw.aacircle(self.canvas, int(x), int(y), 2, GREEN)
       gfxdraw.filled_circle(self.canvas, int(x), int(y), 2, GREEN)
 
   def render_car(self):
     wheel_poly = np.array([(2, 1), (-2, 1), (-2, -1), (2, -1)])
     # front left wheel
-    front_left = wheel_poly.copy() @ self.rot_mat(self.car.steer) + (0.3 * self.car.l, 0.6 * self.car.w)
-    front_left = front_left @ self.rot_mat(self.car.theta) + (self.car.x, self.car.y)
+    front_left = self.transform(wheel_poly, self.car.steer, 0.3 * self.car.l, 0.6 * self.car.w)
+    front_left = self.transform(front_left, self.car.theta, self.car.x, self.car.y)
     front_left = self.canvas_coords(front_left)
     gfxdraw.aapolygon(self.canvas, front_left, BLACK)
     gfxdraw.filled_polygon(self.canvas, front_left, BLACK)
     # front right wheel
-    front_right = wheel_poly.copy() @ self.rot_mat(self.car.steer) + (0.3 * self.car.l, -0.6 * self.car.w)
-    front_right = front_right @ self.rot_mat(self.car.theta) + (self.car.x, self.car.y)
+    front_right = self.transform(wheel_poly, self.car.steer, 0.3 * self.car.l, -0.6 * self.car.w)
+    front_right = self.transform(front_right, self.car.theta, self.car.x, self.car.y)
     front_right = self.canvas_coords(front_right)
     gfxdraw.aapolygon(self.canvas, front_right, BLACK)
     gfxdraw.filled_polygon(self.canvas, front_right, BLACK)
     # back left wheel
-    back_left =  wheel_poly.copy() + (-0.3 * self.car.l, 0.6 * self.car.w)
-    back_left = back_left @ self.rot_mat(self.car.theta) + (self.car.x, self.car.y)
+    back_left = self.transform(wheel_poly, 0, -0.3 * self.car.l, 0.6 * self.car.w)
+    back_left = self.transform(back_left, self.car.theta, self.car.x, self.car.y)
     back_left = self.canvas_coords(back_left)
     gfxdraw.aapolygon(self.canvas, back_left, BLACK)
     gfxdraw.filled_polygon(self.canvas, back_left, BLACK)
     # back right wheel
-    back_right =  wheel_poly.copy() + (-0.3 * self.car.l, -0.6 * self.car.w)
-    back_right = back_right @ self.rot_mat(self.car.theta) + (self.car.x, self.car.y)
+    back_right = self.transform(wheel_poly, 0, -0.3 * self.car.l, -0.6 * self.car.w)
+    back_right = self.transform(back_right, self.car.theta, self.car.x, self.car.y)
     back_right = self.canvas_coords(back_right)
     gfxdraw.aapolygon(self.canvas, back_right, BLACK)
     gfxdraw.filled_polygon(self.canvas, back_right, BLACK)
     # car body
-    car_poly = np.array([(0.5 * self.car.l, 0.5 * self.car.w), (-0.5 * self.car.l, 0.5 * self.car.w), (-0.5 * self.car.l, -0.5 * self.car.w), (0.5 * self.car.l, -0.5 * self.car.w)])
-    car_points = car_poly @ self.rot_mat(self.car.theta) + (self.car.x, self.car.y)
+    car_poly = np.array([
+      (0.5 * self.car.l, 0.5 * self.car.w),
+      (-0.5 * self.car.l, 0.5 * self.car.w),
+      (-0.5 * self.car.l, -0.5 * self.car.w),
+      (0.5 * self.car.l, -0.5 * self.car.w),
+    ])
+    car_points = self.transform(car_poly, self.car.theta, self.car.x, self.car.y)
     car_points = self.canvas_coords(car_points)
     gfxdraw.aapolygon(self.canvas, car_points, RED)
     gfxdraw.filled_polygon(self.canvas, car_points, RED)

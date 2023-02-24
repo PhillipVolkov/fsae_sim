@@ -27,9 +27,8 @@ class Car:
     self.vel = 0
 
   def update(self, dt):
-    perception = self.detect_cones()
-    state = (self.x, self.y, self.theta)
-    self.steer, self.vel = self.ai.compute(perception, state)
+    percept = self.detect_cones()
+    self.steer, self.vel = self.ai.compute(percept)
     self.step(dt)
 
   def detect_cones(self):
@@ -38,13 +37,15 @@ class Car:
     for x, y in blue_cones:
       x *= 0.01 * CANVAS_WIDTH
       y *= 0.01 * CANVAS_HEIGHT
-      if (x - self.x) * (x - self.x) + (y - self.y) * (y - self.y) < PERCEPT_RADIUS * PERCEPT_RADIUS:
-        left_cones.append(np.array([x, y]))
+      cone = self.relative_pos((x, y))
+      if np.linalg.norm(cone) < PERCEPT_RADIUS:
+        left_cones.append(cone)
     for x, y in yellow_cones:
       x *= 0.01 * CANVAS_WIDTH
       y *= 0.01 * CANVAS_HEIGHT
-      if (x - self.x) * (x - self.x) + (y - self.y) * (y - self.y) < PERCEPT_RADIUS * PERCEPT_RADIUS:
-        right_cones.append(np.array([x, y]))
+      cone = self.relative_pos((x, y))
+      if np.linalg.norm(cone) < PERCEPT_RADIUS:
+        right_cones.append(cone)
     return left_cones, right_cones
 
   def step(self, dt):
@@ -62,3 +63,10 @@ class Car:
     self.x += np.random.normal(0, NOISE)
     self.y += np.random.normal(0, NOISE)
     self.theta += np.random.normal(0, NOISE)
+
+  def relative_pos(self, pt):
+    x, y = pt
+    cos = np.cos(self.theta)
+    sin = np.sin(self.theta)
+    R = np.array([[cos, sin], [-sin, cos]])
+    return R @ np.array([x - self.x, y - self.y])
